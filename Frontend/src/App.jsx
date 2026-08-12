@@ -1,25 +1,30 @@
 import { useState } from "react";
 import "./App.css";
+import API_URL from "./config";
 
 function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
   const addUser = async () => {
-    const response = await fetch("http://127.0.0.1:5000/add-user", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-      }),
-    });
+    try {
+      const response = await fetch(`${API_URL}/add-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name,
+          email: email,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    console.log(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }
   };
 
   return (
@@ -42,9 +47,10 @@ function App() {
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <button 
-      className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
-      onClick={addUser}>
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
+        onClick={addUser}
+      >
         Add User
       </button>
     </div>
