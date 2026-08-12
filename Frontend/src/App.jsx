@@ -7,44 +7,35 @@ function App() {
   const [email, setEmail] = useState("");
 
   const addUser = async () => {
-    // Basic validation
-    if (!name || !email) {
-      alert("Please enter both name and email.");
-      return;
-    }
+  try {
+    const response = await fetch(`${API_URL}/add-user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        email,
+      }),
+    });
 
-    try {
-      const response = await fetch(`${API_URL}/add-user`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: name,
-          email: email,
-        }),
-      });
+    const data = await response.json();
 
-      const data = await response.json();
+    if (data.success) {
+      alert(data.message);
 
-      if (!response.ok) {
-        console.error("Backend error:", data);
-        alert(data.message || "Failed to add user.");
-        return;
-      }
-
-      console.log("Success:", data);
-
-      alert("User added successfully!");
-
-      // Clear inputs
+      // Clear inputs after successful insertion
       setName("");
       setEmail("");
-    } catch (error) {
-      console.error("Connection error:", error);
-      alert("Could not connect to the Flask backend.");
+    } else {
+      alert(data.message);
     }
-  };
+
+  } catch (error) {
+    console.error("Error adding user:", error);
+    alert("Unable to connect to the Flask server.");
+  }
+};
 
   return (
     <div className="text-red-500 p-5">

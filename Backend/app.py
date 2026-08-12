@@ -80,46 +80,47 @@ def add_user():
         }), 500
 
 
-# Get all users
-@app.route("/users", methods=["GET"])
-def get_users():
+@app.route("/add-user", methods=["POST"])
+def add_user():
     try:
-        user_list = list(users.find())
+        data = request.get_json()
 
-        for user in user_list:
-            user["_id"] = str(user["_id"])
-
-        return jsonify(user_list), 200
-
-    except Exception as e:
-        return jsonify({
-            "message": "Failed to get users",
-            "error": str(e)
-        }), 500
-
-
-# Delete user
-@app.route("/delete-user/<user_id>", methods=["DELETE"])
-def delete_user(user_id):
-    try:
-        from bson.objectid import ObjectId
-
-        result = users.delete_one({
-            "_id": ObjectId(user_id)
-        })
-
-        if result.deleted_count == 0:
+        if not data:
             return jsonify({
-                "message": "User not found"
-            }), 404
+                "success": False,
+                "message": "No data provided"
+            }), 400
+
+        name = data.get("name")
+        email = data.get("email")
+
+        if not name or not email:
+            return jsonify({
+                "success": False,
+                "message": "Name and email are required"
+            }), 400
+
+        user = {
+            "name": name,
+            "email": email
+        }
+
+        result = users.insert_one(user)
 
         return jsonify({
-            "message": "User deleted successfully"
-        }), 200
+            "success": True,
+            "message": "User added successfully!",
+            "user": {
+                "id": str(result.inserted_id),
+                "name": name,
+                "email": email
+            }
+        }), 201
 
     except Exception as e:
         return jsonify({
-            "message": "Failed to delete user",
+            "success": False,
+            "message": "Failed to add user",
             "error": str(e)
         }), 500
 
