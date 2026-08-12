@@ -1,2 +1,2 @@
-const API_URL = "https://thesis2026-production.up.railway.app"
+const API_URL = "https://beautiful-adaptation-production-6c75.up.railway.app"
 export default API_URL;
