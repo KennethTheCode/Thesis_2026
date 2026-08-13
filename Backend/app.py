@@ -80,50 +80,6 @@ def add_user():
         }), 500
 
 
-@app.route("/add-user", methods=["POST"])
-def add_user():
-    try:
-        data = request.get_json()
-
-        if not data:
-            return jsonify({
-                "success": False,
-                "message": "No data provided"
-            }), 400
-
-        name = data.get("name")
-        email = data.get("email")
-
-        if not name or not email:
-            return jsonify({
-                "success": False,
-                "message": "Name and email are required"
-            }), 400
-
-        user = {
-            "name": name,
-            "email": email
-        }
-
-        result = users.insert_one(user)
-
-        return jsonify({
-            "success": True,
-            "message": "User added successfully!",
-            "user": {
-                "id": str(result.inserted_id),
-                "name": name,
-                "email": email
-            }
-        }), 201
-
-    except Exception as e:
-        return jsonify({
-            "success": False,
-            "message": "Failed to add user",
-            "error": str(e)
-        }), 500
-
 
 # Run Flask
 if __name__ == "__main__":
