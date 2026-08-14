@@ -9,7 +9,7 @@ app = Flask(__name__)
 # Allow requests from your React frontend
 CORS(app)
 
-# MongoDB Atlas connection
+# MongoDB Atlas connections
 uri = "mongodb+srv://paulekennethd_db_user:aozKkhzLGeWXicto@cluster0.yyrzrdi.mongodb.net"
 
 client = MongoClient(
