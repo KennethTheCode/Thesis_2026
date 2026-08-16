@@ -6,10 +6,10 @@ import Logo from "../../Images/Logo.png";
 function Login() {
   return (
     <div className="flex mt-5 justify-center w-full h-screen items-center">
-        <div className="border bg-black border-gray-900 rounded w-[35vh] gap-3 flex flex-col p-4">
+        <div className="border bg-black border-gray-900 rounded w-[40vh] gap-3 flex flex-col p-4">
             <div className="flex flex-col items-center gap-2 ">
              <img src={Logo} alt="Logo" className="h-[8vh] object-contain bg-gray-200 rounded-full"/>
-             <p className="text-[12px] text-gray-200 font-semibold">Lost something? let's PerpsFind it!</p>
+             <p className="text-[12px] text-gray-200 font-semibold text-center">Lost something? let's PerpsFind it!</p>
             </div> 
             <div className="flex flex-col gap-2 border-b border-gray-800 pb-5">
                 <p className="text-gray-200 font-semibold text-[10px]">Username or email address</p>
