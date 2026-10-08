@@ -1,32 +1,29 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import "./App.css";
-import Login from "./Components/LogIn/Login";
+import { useEffect, useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+
+import LandingPage from './Pages/LandingPage'
+import SignUp from './Pages/SignUp'
 
 function App() {
+  const [message, setMessage] = useState('Loading...')
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/')
+      .then((response) => response.json())
+      .then((data) => setMessage(data.message))
+      .catch(() => setMessage('Could not connect to FastAPI backend'))
+  }, [])
+
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
-
-      {/* Dotted background */}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, #3f3f46 2px, transparent 2px)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      {/* Content */}
-      <div className="relative z-10">
-        <Router>
-          <Routes>
-            <Route path="/" element={<Login />} />
-          </Routes>
-        </Router>
+    <Router>
+      <div className="min-h-screen px-5 sm:px-0 bg-zinc-900 bg-[linear-gradient(to_right,rgba(156,163,175,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(156,163,175,0.08)_1px,transparent_1px)] bg-[size:35px_35px]">
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Routes>
       </div>
-
-    </div>
-  );
+    </Router>
+  )
 }
 
-export default App;
+export default App
