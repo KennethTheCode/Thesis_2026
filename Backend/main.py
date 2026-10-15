@@ -1,16 +1,20 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from config import settings
 
-app = FastAPI()
+client = AsyncIOMotorClient(settings.mongodb_url, serverSelectionTimeoutMS=5000)
+db = client[settings.db_name]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-@app.get("/")
-async def root():
-    return {"message": "Hello from FastAPI"}
+async def check_connection():
+    try:
+        await client.admin.command("ping")
+        print("Connected to MongoDB")
+    except Exception as e:
+        raise RuntimeError(f"MongoDB connection failed: {e}") from e
+
+
+async def create_indexes():
+    await db.users.create_index("username", unique=True)
+    await db.users.create_index("contact_number", unique=True)
+    await db.facilities.create_index([("location", "2dsphere")])
+    await db.tickets.create_index([("status", 1), ("created_at", -1)])
