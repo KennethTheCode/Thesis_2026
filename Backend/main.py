@@ -1,20 +1,36 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-from config import settings
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from database import check_connection, create_indexes, client
+from database import db
 
-client = AsyncIOMotorClient(settings.mongodb_url, serverSelectionTimeoutMS=5000)
-db = client[settings.db_name]
+from routers import users
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await check_connection()
+    await create_indexes()
+    yield
+    client.close()
 
-async def check_connection():
+app = FastAPI(lifespan=lifespan)
+
+# WAG GAGALAWIN PERO PAG KAILANGAN SIGE LANG
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health") # Wag gagalawin
+async def health():
     try:
-        await client.admin.command("ping")
-        print("Connected to MongoDB")
+        await db.command("ping")
+        return {"api": "ok", "mongodb": "connected"}
     except Exception as e:
-        raise RuntimeError(f"MongoDB connection failed: {e}") from e
-
-
-async def create_indexes():
-    await db.users.create_index("username", unique=True)
-    await db.users.create_index("contact_number", unique=True)
-    await db.facilities.create_index([("location", "2dsphere")])
-    await db.tickets.create_index([("status", 1), ("created_at", -1)])
+        return {"api": "ok", "mongodb": "not connected", "error": str(e)}
+    
+# Dito mo sa baba lagay mga routers migz one line lang pang tawag
+app.include_router(users.router, prefix="/users", tags=["users"])
