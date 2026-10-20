@@ -25,6 +25,10 @@ function SignUp() {
     termsAccepted: false
   })
 
+  // State for toggling password visibility
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   const [idFile, setIdFile] = useState(null)
   const [errors, setErrors] = useState({})
   const [apiError, setApiError] = useState('')
@@ -34,7 +38,7 @@ function SignUp() {
 
   const timerRef = useRef(null)
 
-  // Rate Limiter Cooldown Count Down
+  // Rate Limiter Cooldown Count Down (3-second button cooldown)
   useEffect(() => {
     if (cooldown > 0) {
       timerRef.current = setInterval(() => {
@@ -125,14 +129,13 @@ function SignUp() {
 
     if (!validateForm()) return
 
-    // Enforce 3-Second Rate Limiter
+    // 3-second button rate limiter
     setIsSubmitting(true)
     setCooldown(3)
 
     const payload = new FormData()
     payload.append('username', formData.username)
     payload.append('password', formData.password)
-    payload.append('confirm_password', formData.confirmPassword)
     payload.append('birthday', formData.birthday)
     payload.append('gender', formData.gender)
     payload.append('valid_id_type', formData.validIdType)
@@ -142,7 +145,8 @@ function SignUp() {
     payload.append('valid_id_picture', idFile)
 
     try {
-      const response = await fetch('/api/auth/register', {
+      // POST directly to your users.py FastAPI endpoint
+      const response = await fetch('http://127.0.0.1:8000/users/', {
         method: 'POST',
         body: payload
       })
@@ -165,7 +169,7 @@ function SignUp() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-10">
+    <div className="flex flex-col items-center justify-center min-h-screen py-10 ">
       <div className="bg-neutral-900 p-8 rounded shadow-md w-full max-w-lg border border-neutral-800">
         <div className="flex flex-col">
           <img src={Logo} alt="Logo" className="w-24 h-24 mx-auto mb-2" />
@@ -204,29 +208,73 @@ function SignUp() {
 
           {/* Password & Confirm Password */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Create Password */}
             <div className="flex flex-col">
               <label className="text-gray-400 text-xs font-thin mb-1">Create Password</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="px-3 py-2 bg-neutral-800 text-gray-200 placeholder:text-gray-500 border-b border-gray-600 focus:outline-none focus:border-red-500 text-sm rounded-t"
-                placeholder="Enter password"
-              />
+              <div className="relative flex items-center">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 pr-10 bg-neutral-800 text-gray-200 placeholder:text-gray-500 border-b border-gray-600 focus:outline-none focus:border-red-500 text-sm rounded-t"
+                  placeholder="Enter password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-2 text-gray-400 hover:text-gray-200 focus:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    /* Eye Off Icon */
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" />
+                    </svg>
+                  ) : (
+                    /* Eye Open Icon */
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               {errors.password && <span className="text-red-400 text-xs mt-1">{errors.password}</span>}
             </div>
 
+            {/* Confirm Password */}
             <div className="flex flex-col">
               <label className="text-gray-400 text-xs font-thin mb-1">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="px-3 py-2 bg-neutral-800 text-gray-200 placeholder:text-gray-500 border-b border-gray-600 focus:outline-none focus:border-red-500 text-sm rounded-t"
-                placeholder="Confirm password"
-              />
+              <div className="relative flex items-center">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 pr-10 bg-neutral-800 text-gray-200 placeholder:text-gray-500 border-b border-gray-600 focus:outline-none focus:border-red-500 text-sm rounded-t"
+                  placeholder="Confirm password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute right-2 text-gray-400 hover:text-gray-200 focus:outline-none"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                >
+                  {showConfirmPassword ? (
+                    /* Eye Off Icon */
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24M1 1l22 22" />
+                    </svg>
+                  ) : (
+                    /* Eye Open Icon */
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               {errors.confirmPassword && (
                 <span className="text-red-400 text-xs mt-1">{errors.confirmPassword}</span>
               )}

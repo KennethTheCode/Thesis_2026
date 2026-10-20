@@ -7,7 +7,6 @@
 # (MIGZ) 
 # Dito ka mag base palagi kung ano lalagay na data ni liz, ayun lalagay mo sa pang backend.
 
-
 from pydantic import BaseModel, Field
 
 class UserCreate(BaseModel):          # what the client sends

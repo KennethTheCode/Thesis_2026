@@ -3,22 +3,10 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import LandingPage from './Pages/LandingPage'
 import SignUp from './Pages/SignUp'
+import UserPage from './Pages/Users/UserPage'
 
 function App() {
-  const [users, setUsers] = useState([])
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    fetch('http://127.0.0.1:8000/users/')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch users')
-        }
-        return response.json()
-      })
-      .then((data) => setUsers(data))
-      .catch(() => setError('Could not connect to FastAPI backend'))
-  }, [])
+  
 
   return (
     <Router>
@@ -26,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/user" element={<UserPage />} />
         </Routes>
       </div>
     </Router>
