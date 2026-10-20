@@ -27,25 +27,6 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/signup" element={<SignUp />} />
         </Routes>
-
-        <div className="mx-auto max-w-4xl px-5 pb-10">
-          <h2 className="mb-4 text-2xl font-bold">Users</h2>
-          {error ? (
-            <p className="text-red-400">{error}</p>
-          ) : users.length === 0 ? (
-            <p>Loading users...</p>
-          ) : (
-            <ul className="space-y-3">
-              {users.map((user) => (
-                <li key={user.id} className="rounded-lg border border-zinc-700 bg-zinc-800 p-4">
-                  <p className="font-semibold">{user.username}</p>
-                  <p className="text-sm text-zinc-300">{user.contact_number}</p>
-                  <p className="text-sm text-emerald-400">Status: {user.status}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       </div>
     </Router>
   )
