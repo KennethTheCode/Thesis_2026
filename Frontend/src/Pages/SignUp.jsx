@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Logo from '../Images/Logo.png'
+import TermsModal from '../Components/TermsModal'
 
 const VALID_IDS = [
   "Driver's License",
@@ -13,6 +14,8 @@ const VALID_IDS = [
 ]
 
 function SignUp() {
+  const [showModal, setShowModal] = useState(false);
+
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -382,12 +385,25 @@ function SignUp() {
             />
             <label htmlFor="termsAccepted" className="text-gray-400 text-xs font-thin cursor-pointer">
               I agree to the{' '}
-              <a href="#terms" className="text-blue-500 hover:underline">
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                className="text-blue-500 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+              >
                 Terms and Conditions
-              </a>{' '}
+              </button>{' '}
               and Privacy Policy of ResQ:Biñan.
             </label>
           </div>
+          <TermsModal
+            open={showModal}
+            onClose={() => setShowModal(false)}
+            onAccept={() => {
+              setFormData((prev) => ({ ...prev, termsAccepted: true }))
+              setErrors((prev) => ({ ...prev, termsAccepted: '' }))
+              setShowModal(false)
+            }}
+          />
           {errors.termsAccepted && (
             <p className="text-red-400 text-xs mb-4 -mt-4">{errors.termsAccepted}</p>
           )}
