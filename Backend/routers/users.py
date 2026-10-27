@@ -45,6 +45,7 @@ async def get_users():
 @router.post("/", response_model=UserOut, status_code=201)
 async def create_user(
     username: str = Form(...),
+    email: str = Form(...),
     password: str = Form(...),
     birthday: str = Form(...),
     gender: str = Form(...),
@@ -87,6 +88,7 @@ async def create_user(
     # Construct MongoDB document
     doc = {
         "username": username.lower(),
+        "email": email.strip().lower(),
         "password_hash": password_hash,
         "birthday": birthday,
         "gender": gender,
@@ -95,7 +97,7 @@ async def create_user(
         "address": address,
         "contact_number": contact_number,
         "terms_accepted": terms_accepted,
-        "role": "user",
+        "role": "citizen",
         "status": "active",
         "failed_attempts": 0,
         "lockout_until": None,

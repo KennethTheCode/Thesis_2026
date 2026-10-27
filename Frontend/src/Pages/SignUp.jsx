@@ -18,6 +18,7 @@ function SignUp() {
 
   const [formData, setFormData] = useState({
     username: '',
+    email: '',
     password: '',
     confirmPassword: '',
     birthday: '',
@@ -86,6 +87,12 @@ function SignUp() {
     if (!formData.username.trim()) newErrors.username = 'Username is required.'
     if (formData.username.length < 3) newErrors.username = 'Username must be at least 3 characters.'
 
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required.'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Enter a valid email address.'
+    }
+
     if (!formData.password) {
       newErrors.password = 'Password is required.'
     } else if (formData.password.length < 8) {
@@ -138,6 +145,7 @@ function SignUp() {
 
     const payload = new FormData()
     payload.append('username', formData.username)
+    payload.append('email', formData.email)
     payload.append('password', formData.password)
     payload.append('birthday', formData.birthday)
     payload.append('gender', formData.gender)
@@ -207,6 +215,20 @@ function SignUp() {
               placeholder="Enter your username"
             />
             {errors.username && <span className="text-red-400 text-xs mt-1">{errors.username}</span>}
+          </div>
+
+          {/* Email */}
+          <div className="mb-4 flex flex-col">
+            <label className="text-gray-400 text-xs font-thin mb-1">Email Address</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="px-3 py-2 bg-neutral-800 text-gray-200 placeholder:text-gray-500 border-b border-gray-600 focus:outline-none focus:border-red-500 text-sm rounded-t"
+              placeholder="Enter your email"
+            />
+            {errors.email && <span className="text-red-400 text-xs mt-1">{errors.email}</span>}
           </div>
 
           {/* Password & Confirm Password */}

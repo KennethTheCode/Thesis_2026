@@ -22,7 +22,7 @@ VALIDATORS = {
             "email": {"bsonType": "string"},
             "contact_number": {"bsonType": "string"},
             "address": {"bsonType": "string"},
-            "role": {"enum": ["admin", "responder", "barangay_official", "citizen"]},
+            "role": {"enum": ["admin", "responder", "barangay_official", "citizen", "user"]},
             "status": {"enum": ["active", "inactive", "suspended"]},
             "created_at": {"bsonType": "date"},
         },

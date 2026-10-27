@@ -98,7 +98,7 @@ function UserMap() {
       <div className="w-full h-full rounded-lg overflow-hidden  shadow-lg relative z-0">
         <MapContainer
           center={centerCoordinates}
-          zoom={14}
+          zoom={13}
           scrollWheelZoom={true}
           style={{ width: '100%', height: '100%' }}
         >
