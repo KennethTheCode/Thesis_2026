@@ -3,6 +3,17 @@ bypasses the API. Pydantic = first line of defence, this = last line."""
 
 _NUM = ["double", "int", "long"]
 
+# ---- Dropdown options (single source of truth: the API and the DB both use these) ----
+# If you edit these, edit BARANGAYS / FACILITY_TYPES in facilityOptions.js (frontend) too.
+FACILITY_TYPES = ["hospital", "fire_station", "police_station", "cdrrmo", "ambulance_base"]
+
+BARANGAYS = [
+    "Biñan (Poblacion)", "Bungahan", "Canlalay", "Casile", "De La Paz", "Ganado",
+    "Langkiwa", "Loma", "Malaban", "Malamig", "Mampalasan", "Platero", "San Antonio",
+    "San Francisco (Halang)", "San Jose", "San Vicente", "Sto. Domingo", "Sto. Niño",
+    "Sto. Tomas (Calabuso)", "Soro-soro", "Timbao", "Tubigan", "Zapote",
+]
+
 GEOJSON_POINT = {
     "bsonType": "object",
     "required": ["type", "coordinates"],
@@ -41,11 +52,19 @@ VALIDATORS = {
     },
     "facilities": {
         "bsonType": "object",
-        "required": ["name", "facility_type", "location"],
+        "required": [
+            "name", "facility_type", "address", "barangay", "contact_number",
+            "location", "status", "created_at",
+        ],
         "properties": {
-            "name": {"bsonType": "string"},
-            "facility_type": {"enum": ["hospital", "fire_station", "police_station", "cdrrmo", "ambulance_base"]},
+            "name": {"bsonType": "string", "minLength": 3, "maxLength": 100},
+            "facility_type": {"enum": FACILITY_TYPES},
+            "address": {"bsonType": "string", "minLength": 5, "maxLength": 200},
+            "barangay": {"enum": BARANGAYS},
+            "contact_number": {"bsonType": "string"},
             "location": GEOJSON_POINT,
+            "status": {"enum": ["active", "archived"]},
+            "created_at": {"bsonType": "date"},
         },
     },
     "tickets": {

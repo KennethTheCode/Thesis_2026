@@ -2,7 +2,7 @@ import React from 'react'
 
 function TicketManagement() {
   return (
-    <div className='h-[50%] p-3 bg-zinc-900 w-[45vh] '>
+    <div className='h-[50%]  bg-zinc-900 w-[45vh] '>
         <div className='border-zinc-700 border p-2 h-screen rounded bg'>
             <div className='border-b border-zinc-800 py-1 flex justify-between flex items-center'>
                 <p className='text-xs font-semibold'>Recent Incidents</p>

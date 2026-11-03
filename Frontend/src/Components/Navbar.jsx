@@ -30,7 +30,7 @@ export default function Navbar({ user = { role: 'Admin', name: 'Dispatcher' }, o
     {
       label: 'Live Map',
       icon: 'map',
-      path: '/map',
+      path: '/admin-dashboard',
       roles: ['Admin', 'Responder', 'User'],
       activeColor: 'bg-amber-700/30 text-amber-300 border-amber-500/50',
       idleColor: 'bg-amber-700/20 text-amber-500 hover:text-amber-300 hover:bg-amber-700/30',
@@ -64,7 +64,7 @@ export default function Navbar({ user = { role: 'Admin', name: 'Dispatcher' }, o
       icon: 'apartment',
       path: '/facilities',
       roles: ['Admin'],
-      activeColor: 'bg-gray-700/30 text-gray-300 border-green-500/50',
+      activeColor: 'bg-gray-700/30 text-gray-300 border-gray-500/50',
       idleColor: 'bg-gray-700/20 text-gray-500 hover:text-gray-300 hover:bg-gray-700/30',
     },
   ];
