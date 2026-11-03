@@ -5,6 +5,7 @@ import LandingPage from './Pages/LandingPage'
 import SignUp from './Pages/SignUp'
 import UserPage from './Pages/Users/UserPage'
 import AdminDashboard from './Pages/Admin/AdminDashboard'
+import ManageFacilities from './Pages/Admin/ManageFacilities/ManageFacilities'
 
 function App() {
   
@@ -17,6 +18,8 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/user" element={<UserPage />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/facilities" element={<ManageFacilities />} />
+
         </Routes>
       </div>
     </Router>

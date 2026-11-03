@@ -4,12 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import check_connection, create_indexes, client
 from database import db
 
-from routers import users
+from routers import users, facility
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await check_connection()
     await create_indexes()
+    await facility.ensure_facility_indexes()   # unique indexes = no duplicate facilities
     yield
     client.close()
 
@@ -31,6 +32,7 @@ async def health():
         return {"api": "ok", "mongodb": "connected"}
     except Exception as e:
         return {"api": "ok", "mongodb": "not connected", "error": str(e)}
-    
+
 # Dito mo sa baba lagay mga routers migz one line lang pang tawag
 app.include_router(users.router, prefix="/users", tags=["users"])
+app.include_router(facility.router, prefix="/facilities", tags=["facilities"])
