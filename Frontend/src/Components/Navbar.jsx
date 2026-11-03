@@ -59,6 +59,14 @@ export default function Navbar({ user = { role: 'Admin', name: 'Dispatcher' }, o
       activeColor: 'bg-green-700/30 text-green-300 border-green-500/50',
       idleColor: 'bg-green-700/20 text-green-500 hover:text-green-300 hover:bg-green-700/30',
     },
+    {
+      label: 'Manage Facilities',
+      icon: 'apartment',
+      path: '/facilities',
+      roles: ['Admin'],
+      activeColor: 'bg-gray-700/30 text-gray-300 border-green-500/50',
+      idleColor: 'bg-gray-700/20 text-gray-500 hover:text-gray-300 hover:bg-gray-700/30',
+    },
   ];
 
   const visibleNavItems = navItems.filter((item) => item.roles.includes(user?.role || 'User'));
