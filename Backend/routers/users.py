@@ -9,6 +9,9 @@ from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 from database import db
 from schemas.user import UserOut
 
+from fastapi import Depends
+from auth import require_admin
+
 router = APIRouter()
 
 MAX_FAILED_ATTEMPTS = 5
@@ -32,7 +35,7 @@ class LoginSchema(BaseModel):
 
 
 # 1. Read all users: GET /users/
-@router.get("/", response_model=list[UserOut])
+@router.get("/", dependencies=[Depends(require_admin)])
 async def get_users():
     users = []
     async for user in db.users.find({}, {"password_hash": 0}).sort("created_at", -1):

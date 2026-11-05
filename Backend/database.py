@@ -1,5 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from config import settings
+from db_schema import ensure_collections
 
 # Pang connect sa database/mongodb
 client = AsyncIOMotorClient(settings.mongodb_url, serverSelectionTimeoutMS=5000)
@@ -21,3 +22,11 @@ async def create_indexes():
     await db.users.create_index("contact_number", unique=True)
     await db.facilities.create_index([("location", "2dsphere")])
     await db.tickets.create_index([("status", 1), ("created_at", -1)])
+
+async def init_db():
+    try:
+        await ensure_collections(db)
+        await create_indexes()
+        print("Collections and indexes ready")
+    except Exception as e:
+        raise RuntimeError(f"Database initialisation failed: {e}") from e

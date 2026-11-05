@@ -8,6 +8,7 @@
 # Dito ka mag base palagi kung ano lalagay na data ni liz, ayun lalagay mo sa pang backend.
 
 from pydantic import BaseModel, Field
+from typing import Literal, Optional
 
 class UserCreate(BaseModel):          # what the client sends
     username: str = Field(min_length=4, max_length=30)
@@ -20,3 +21,5 @@ class UserOut(BaseModel):             # what we send back (no password!)
     username: str
     contact_number: str
     status: str
+    email: Optional[str] = None                                                      
+    role: Literal["admin", "responder", "barangay_official", "citizen"] = "citizen"  
