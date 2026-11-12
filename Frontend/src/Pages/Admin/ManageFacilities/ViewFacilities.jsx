@@ -4,8 +4,8 @@ import FilterFacilities from './FilterFacilities'
 import ArchiveFacilities from './ArchiveFacilities'
 import AddFacilities from './AddFacilities'
 import EditFacilities from './EditFacilities'
-import { getFacilities, archiveFacility } from '../facilityApi'
-import { typeInfo } from '../Facilityoptions.js'
+import { getFacilities, archiveFacility } from './Facilityapi.js'
+import { typeInfo } from './Facilityoptions.js'
 
 // refreshKey changes whenever data changed; onChanged() tells the parent to bump it
 // (this is what updates the table AND the map without a page refresh).

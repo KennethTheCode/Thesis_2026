@@ -4,13 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import check_connection, create_indexes, client
 from database import db
 
-from routers import users, facility
+from routers import users, facility, incidents
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await check_connection()
     await create_indexes()
     await facility.ensure_facility_indexes()   # unique indexes = no duplicate facilities
+    await incidents.ensure_incident_indexes()   # unique indexes for incident reference nos & 2dsphere index
     yield
     client.close()
 
@@ -36,3 +37,4 @@ async def health():
 # Dito mo sa baba lagay mga routers migz one line lang pang tawag
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(facility.router, prefix="/facilities", tags=["facilities"])
+app.include_router(incidents.router, prefix="/incidents", tags=["incidents"])

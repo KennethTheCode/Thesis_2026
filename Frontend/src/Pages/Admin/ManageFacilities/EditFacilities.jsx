@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { updateFacility } from '../facilityApi'
-import { SUBMIT_COOLDOWN_S } from '../Facilityoptions.js'
-import { useCooldown } from '../useCooldown'
+import { updateFacility } from './Facilityapi.js'
+import { SUBMIT_COOLDOWN_S } from './Facilityoptions.js'
+import { useCooldown } from './Usecooldown.js'
 import FacilityFields from './FacilityFields'
 
 // Popup for editing one facility. ViewFacilities shows it when you click "Edit".

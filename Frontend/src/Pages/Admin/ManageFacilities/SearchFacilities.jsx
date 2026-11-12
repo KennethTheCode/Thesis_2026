@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { SEARCH_DELAY_MS } from '../Facilityoptions.js'
+import { SEARCH_DELAY_MS } from './Facilityoptions.js'
 
 // Calls onSearch(text) once you stop typing for SEARCH_DELAY_MS (3000ms).
 // onSearch must be a stable function (wrap it in useCallback in the parent).

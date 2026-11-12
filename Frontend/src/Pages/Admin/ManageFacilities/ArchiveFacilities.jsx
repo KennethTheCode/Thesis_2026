@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getFacilities, restoreFacility } from '../facilityApi'
-import { typeInfo } from '../Facilityoptions.js'
+import { getFacilities, restoreFacility } from './Facilityapi.js'
+import { typeInfo } from './Facilityoptions.js'
 
 // Button + popup list of archived facilities (5 per page) with a Restore button.
 // refreshKey changes whenever something was added/archived so the list stays current.
