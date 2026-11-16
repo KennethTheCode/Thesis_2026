@@ -1,4 +1,4 @@
-import { FACILITY_TYPES, BARANGAYS, COORD_LIMITS } from '../Facilityoptions.js'
+import { FACILITY_TYPES, BARANGAYS, COORD_LIMITS } from './Facilityoptions.js'
 
 const inputClass = "bg-zinc-800 text-zinc-500 placeholder:text-zinc-600 placeholder:font-thin placeholder:text-[12px] px-1 border-b border-zinc-700"
 

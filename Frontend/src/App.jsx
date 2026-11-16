@@ -6,7 +6,7 @@ import SignUp from './Pages/SignUp'
 import UserPage from './Pages/Users/UserPage'
 import AdminDashboard from './Pages/Admin/AdminDashboard'
 import ManageFacilities from './Pages/Admin/ManageFacilities/ManageFacilities'
-
+import ManageIncidents from './Pages/Admin/Incidents/ManageIncidents'
 function App() {
   
 
@@ -19,7 +19,7 @@ function App() {
           <Route path="/user" element={<UserPage />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/facilities" element={<ManageFacilities />} />
-
+          <Route path="/incidents" element={<ManageIncidents />} />
         </Routes>
       </div>
     </Router>

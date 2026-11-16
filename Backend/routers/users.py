@@ -190,6 +190,7 @@ async def login_user(data: LoginSchema):
         )
 
     # 5. Clear Failed Counters on Successful Login
+    # 5. Clear Failed Counters on Successful Login & Return Full User Details
     await db.users.update_one(
         {"_id": user["_id"]},
         {"$set": {"failed_attempts": 0, "lockout_until": None, "last_login": now_utc}}
@@ -200,6 +201,9 @@ async def login_user(data: LoginSchema):
         "user": {
             "id": str(user["_id"]),
             "username": user["username"],
-            "role": user.get("role", "user")
+            "email": user.get("email", ""),
+            "contact_number": user.get("contact_number", ""),
+            "address": user.get("address", ""),
+            "role": user.get("role", "citizen")
         }
     }

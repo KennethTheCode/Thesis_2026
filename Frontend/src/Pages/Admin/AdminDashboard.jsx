@@ -10,7 +10,7 @@ function AdminDashboard() {
       <div className='flex p-3 gap-2 h-[calc(100vh-80px)]'>
         <TicketManagement />
         <div className='w-full h-full min-h-[420px]'>
-          <AdminMap />
+          <AdminMap showFacilities />
         </div>
       </div>
     </div>

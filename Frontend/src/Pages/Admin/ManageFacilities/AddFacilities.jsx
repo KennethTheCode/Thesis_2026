@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { createFacility } from '../facilityApi'
-import { SUBMIT_COOLDOWN_S } from '../Facilityoptions.js'
-import { useCooldown } from '../useCooldown'
+import { createFacility } from './Facilityapi.js'
+import { SUBMIT_COOLDOWN_S } from './Facilityoptions.js'
+import { useCooldown } from './Usecooldown.js'
 import FacilityFields from './FacilityFields'
 
 const emptyForm = {

@@ -15,6 +15,7 @@ async def check_connection():
     except Exception as e:
         raise RuntimeError(f"MongoDB connection failed: {e}") from e
 
+
 # (LIZ) Pwede mo to dagdagan pwede rin bawasan example lang to 
 # dito ka mag seset ng mga index parang primary key ganon yung mga data na bawal may kaparehas pwede rin dito yun
 async def create_indexes():
@@ -30,11 +31,12 @@ async def create_indexes():
     )
     await db.users.create_index("role")
 
-    # incidents
+    # incidents (live SOS + imported LEMS CSV records)
     await db.incidents.create_index([("location", "2dsphere")])
     await db.incidents.create_index("reference_no", unique=True)
     await db.incidents.create_index([("status", 1), ("created_at", -1)])
     await db.incidents.create_index("barangay")
+    await db.incidents.create_index([("year", -1), ("month", -1)])
 
     # facilities
     await db.facilities.create_index([("name", 1), ("facility_type", 1)], unique=True)
