@@ -58,7 +58,7 @@ export default function Navbar({ user: userProp, onSignOut }) {
       idleColor: 'bg-indigo-700/20 text-indigo-500 hover:text-indigo-300 hover:bg-indigo-700/30',
     },
     {
-      label: 'Incidents',
+      label: 'Incidents & Verification',
       icon: 'emergency',
       path: '/incidents',
       roles: ['admin', 'responder', 'barangay_official', 'citizen', 'user'],

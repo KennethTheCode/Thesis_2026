@@ -2,8 +2,9 @@ import React from 'react'
 
 function LiveIncidents() {
   return (
-    <div className='w-full bg-zinc-900 border border-zinc-700 rounded p-2 flex overflow-x-auto'>
-        <div className='flex flex-col gap-2 h-[40vh] w-[40vh] bg-zinc-800 rounded px-2'>
+    <div className='bg-zinc-900 border border-zinc-700 rounded px-2 py-2 flex flex-col overflow-y-auto w-[60vh]'>
+        <p className='text-zinc-200 font-semibold text-lg mb-2'>Live Incidents</p>
+        <div className='flex flex-col gap-2 h-[40vh] w-full bg-zinc-800 rounded px-2'>
             <div className='w-full border-b border-red-500 py-2 justify-between flex items-center '>
                 <p className='text-zinc-200 font-semibold text-sm'>Car Crash</p>
                 <p className='text-zinc-400 font-thin text-[12px]'>Just now</p>

@@ -7,16 +7,24 @@ function readError(data) {
   if (!data || !data.detail) return 'Something went wrong. Please try again.';
   if (typeof data.detail === 'string') return data.detail;
   // FastAPI validation errors come as an array of error objects
-  return data.detail.map((e) => `${e.loc?.[e.loc.length - 1] ?? 'field'}: ${e.msg}`).join('; ');
+  return data.detail
+    .map((e) => `${e.loc?.[e.loc.length - 1] ?? 'field'}: ${e.msg}`)
+    .join('; ');
 }
 
 async function request(path, options = {}) {
+  const isFormData = options.body instanceof FormData;
+  const headers =
+    options.body && !isFormData
+      ? { 'Content-Type': 'application/json', ...options.headers }
+      : { ...options.headers };
+
   let res;
   try {
     res = await fetch(`${API_URL}/incidents${path}`, {
       credentials: 'include',
       ...options,
-      headers: options.body ? { 'Content-Type': 'application/json' } : {},
+      headers,
     });
   } catch {
     throw new Error('Cannot reach the server. Check your connection and try again.');
@@ -40,12 +48,33 @@ export const sendSOSIncident = (payload) =>
 // GET endpoint: Retrieves existing active incidents on initial map load
 export const getMapIncidents = () => request('/map');
 
+// PATCH endpoint: Updates incident lifecycle status (verified, dispatched, resolved, rejected)
+export const updateIncidentStatus = (referenceNo, status) =>
+  request(`/${encodeURIComponent(referenceNo)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+
+// GET endpoint: Checks if user already has an active incident
+export const checkActiveUserIncident = (userIdOrEmail) =>
+  request(`/active/${encodeURIComponent(userIdOrEmail)}`);
+
+// POST endpoint: Imports historical LEMS CSV into the `incidents` collection
+export const importIncidentsCsv = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return request('/import-csv', {
+    method: 'POST',
+    body: formData,
+  });
+};
+
+// GET endpoint: Fetches all resolved records (CSV baseline + resolved live SOS) from `incidents`
+export const getResolvedIncidents = () => request('/resolved');
+
 // Helper function: Resolves the WebSocket endpoint URL based on current protocol
 export const getIncidentWSUrl = () => {
   const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const baseUrl = API_URL.replace(/^https?:\/\//, '');
   return `${wsProtocol}//${baseUrl}/incidents/ws`;
 };
-
-export const checkActiveUserIncident = (userIdOrEmail) =>
-  request(`/active/${userIdOrEmail}`);

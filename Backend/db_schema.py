@@ -9,9 +9,9 @@ FACILITY_TYPES = ["hospital", "fire_station", "police_station", "cdrrmo", "ambul
 
 BARANGAYS = [
     "Biñan (Poblacion)", "Bungahan", "Canlalay", "Casile", "De La Paz", "Ganado",
-    "Langkiwa", "Loma", "Malaban", "Malamig", "Mampalasan", "Platero", "San Antonio",
-    "San Francisco (Halang)", "San Jose", "San Vicente", "Sto. Domingo", "Sto. Niño",
-    "Sto. Tomas (Calabuso)", "Soro-soro", "Timbao", "Tubigan", "Zapote",
+    "Langkiwa", "Loma", "Malaban", "Malamig", "Mampalasan", "Mamplasan", "Platero",
+    "San Antonio", "San Francisco (Halang)", "San Jose", "San Vicente", "Sto. Domingo",
+    "Sto. Niño", "Sto. Tomas (Calabuso)", "Soro-soro", "Timbao", "Tubigan", "Zapote",
 ]
 
 GEOJSON_POINT = {
@@ -40,14 +40,24 @@ VALIDATORS = {
     },
     "incidents": {
         "bsonType": "object",
-        "required": ["reference_no", "incident_type", "severity", "status", "barangay", "location", "created_at"],
+        "required": ["reference_no", "incident_type", "status", "barangay", "location", "created_at"],
         "properties": {
             "reference_no": {"bsonType": "string"},
-            "incident_type": {"enum": ["collision", "pedestrian", "motorcycle", "hit_and_run", "other"]},
-            "severity": {"enum": ["minor", "moderate", "severe", "fatal"]},
-            "status": {"enum": ["reported", "verified", "dispatched", "resolved", "cancelled"]},
+            "user_id": {"bsonType": ["string", "null"]},
+            "email": {"bsonType": ["string", "null"]},
+            "contact_number": {"bsonType": ["string", "null"]},
+            "incident_type": {"bsonType": "string"},
+            "status": {"enum": ["pending", "verified", "dispatched", "resolved", "rejected"]},
+            "barangay": {"enum": BARANGAYS},
+            "landmark_reference": {"bsonType": ["string", "null"]},
+            "accident_date": {"bsonType": ["string", "date", "null"]},
+            "year": {"bsonType": ["int", "long", "null"]},
+            "month": {"bsonType": ["int", "long", "null"]},
+            "source": {"bsonType": ["string", "null"]},
+            "voicemail_file_id": {"bsonType": ["string", "null"]},
             "location": GEOJSON_POINT,
             "created_at": {"bsonType": "date"},
+            "updated_at": {"bsonType": ["date", "null"]},
         },
     },
     "facilities": {
@@ -72,9 +82,11 @@ VALIDATORS = {
         "required": ["ticket_number", "incident_id", "status", "priority", "created_at"],
         "properties": {
             "ticket_number": {"bsonType": "string"},
-            "status": {"enum": ["open", "assigned", "en_route", "on_scene", "closed"]},
+            "incident_id": {"bsonType": "string"},
+            "status": {"enum": ["open", "in_progress", "assigned", "en_route", "on_scene", "closed", "rejected"]},
             "priority": {"enum": ["low", "medium", "high", "critical"]},
             "created_at": {"bsonType": "date"},
+            "updated_at": {"bsonType": "date"},
         },
     },
     "historical_accidents": {
@@ -82,6 +94,7 @@ VALIDATORS = {
         "required": ["accident_date", "barangay", "location"],
         "properties": {
             "accident_date": {"bsonType": "date"},
+            "barangay": {"enum": BARANGAYS},
             "location": GEOJSON_POINT,
         },
     },

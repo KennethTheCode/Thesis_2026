@@ -1,15 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from database import check_connection, create_indexes, client
-from database import db
+from database import check_connection, init_db, client, db
 
-from routers import users, facility, incidents
+from routers import users, facility, incidents, analytics
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await check_connection()
-    await create_indexes()
+    await init_db()                            # runs ensure_collections(db) + create_indexes()
     await facility.ensure_facility_indexes()   # unique indexes = no duplicate facilities
     await incidents.ensure_incident_indexes()   # unique indexes for incident reference nos & 2dsphere index
     yield
@@ -38,3 +37,4 @@ async def health():
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(facility.router, prefix="/facilities", tags=["facilities"])
 app.include_router(incidents.router, prefix="/incidents", tags=["incidents"])
+app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
