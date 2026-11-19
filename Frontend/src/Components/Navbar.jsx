@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '../Images/Logo.png';
+import C3Logo from '../Images/C3Logo.png';
+import BinanLogo from '../Images/BinanLogo.png';
+
 
 export default function Navbar({ user: userProp, onSignOut }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -95,6 +98,8 @@ export default function Navbar({ user: userProp, onSignOut }) {
             className="flex items-center gap-2 cursor-pointer" 
             onClick={() => handleNavigation(userRole === 'admin' ? '/admin-dashboard' : '/user')}
           >
+            <img src={C3Logo} alt="ResQ Biñan Logo" className="h-10 w-auto object-contain" />
+            <img src={BinanLogo} alt="ResQ Biñan Logo" className="h-10 w-auto object-contain" />
             <img src={Logo} alt="ResQ Biñan Logo" className="h-10 w-auto object-contain" />
             <span className="font-bold tracking-wide text-zinc-200 text-sm">
               ResQ:Biñan
