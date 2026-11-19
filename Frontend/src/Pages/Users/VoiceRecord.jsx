@@ -182,7 +182,7 @@ function VoiceRecord({ incidentRef, onSendSuccess }) {
               type="button"
               onClick={sendVoicemail}
               disabled={isUploading}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer transition-colors disabled:opacity-50"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-xl font-semibold cursor-pointer transition-colors disabled:opacity-50"
             >
               {isUploading ? 'Sending...' : 'Send Voicemail'}
             </button>

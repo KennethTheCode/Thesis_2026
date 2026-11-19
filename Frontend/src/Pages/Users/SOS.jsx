@@ -182,7 +182,6 @@ function SOS() {
                                 {/* Voice Recording Component */}
                                 <VoiceRecord incidentRef={request?.id} />
 
-                                <button onClick={closeSOS} className="bg-red-500 hover:bg-red-600 transition-colors text-white px-8 py-3 rounded-xl w-full cursor-pointer duration-300">Close Window</button>
                             </div>
                         )}
                     </div>

@@ -10,75 +10,103 @@ function TicketManagement() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  // 1. Fetch initial active incidents
-  useEffect(() => {
-    let ignore = false
-    getMapIncidents()
-      .then((data) => {
-        if (!ignore) setIncidents(data.map((inc) => formatIncident(inc)))
-      })
-      .catch((err) => console.error('Failed to load tickets:', err))
-    return () => {
-      ignore = true
+  const loadTickets = useCallback(async () => {
+    try {
+      const data = await getMapIncidents()
+      setIncidents(data.map((inc) => formatIncident(inc)))
+    } catch (err) {
+      console.error('Failed to load tickets:', err)
     }
   }, [])
 
-  // 2. Real-time WebSocket sync
+  // 1. Fetch initial active incidents
   useEffect(() => {
-    const ws = new WebSocket(getIncidentWSUrl())
+    loadTickets()
+  }, [loadTickets])
 
-    ws.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data)
+  // 2. Real-time WebSocket sync with auto-reconnect & authoritative refresh
+  useEffect(() => {
+    let ws
+    let reconnectTimer
+    let isUnmounted = false
 
-        if (payload.event === 'NEW_INCIDENT') {
-          const newItem = formatIncident(payload.data, true)
-          setIncidents((prev) =>
-            prev.some((item) => item.reference_no === newItem.reference_no) ? prev : [newItem, ...prev]
-          )
-        }
+    const connectWS = () => {
+      ws = new WebSocket(getIncidentWSUrl())
 
-        if (payload.event === 'INCIDENT_STATUS_UPDATED') {
-          const { reference_no, status } = payload.data
-          const isTerminal = status === 'resolved' || status === 'rejected'
-          const badge = STATUS_BADGE[status] || STATUS_BADGE.pending
+      ws.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data)
 
-          setIncidents((prev) =>
-            isTerminal
-              ? prev.filter((item) => item.reference_no !== reference_no)
-              : prev.map((item) =>
-                  item.reference_no === reference_no
-                    ? { ...item, rawStatus: status, statusLabel: badge.label, statusBg: badge.style }
-                    : item
-                )
-          )
-
-          setSelectedIncident((prev) => {
-            if (!prev || prev.reference_no !== reference_no) return prev
-            if (isTerminal) {
-              setTimeout(() => setSelectedIncident(null), 1000)
-              return { ...prev, rawStatus: status, statusLabel: badge.label, statusBg: badge.style }
+          if (payload.event === 'NEW_INCIDENT' || payload.event === 'INCIDENT_CREATED') {
+            if (payload.data) {
+              const newItem = formatIncident(payload.data, true)
+              setIncidents((prev) =>
+                prev.some((item) => item.reference_no === newItem.reference_no)
+                  ? prev
+                  : [newItem, ...prev]
+              )
             }
-            return { ...prev, rawStatus: status, statusLabel: badge.label, statusBg: badge.style }
-          })
-        }
+            // Re-fetch from API so all fields/IDs match getMapIncidents()
+            loadTickets()
+          }
 
-        if (payload.event === 'VOICEMAIL_ATTACHED') {
-          const { reference_no, voicemail_file_id } = payload.data
-          setIncidents((prev) =>
-            prev.map((item) => (item.reference_no === reference_no ? { ...item, voicemail_file_id } : item))
-          )
-          setSelectedIncident((prev) =>
-            prev && prev.reference_no === reference_no ? { ...prev, voicemail_file_id } : prev
-          )
+          if (payload.event === 'INCIDENT_STATUS_UPDATED') {
+            const { reference_no, status } = payload.data || {}
+            const isTerminal = status === 'resolved' || status === 'rejected'
+            const badge = STATUS_BADGE[status] || STATUS_BADGE.pending
+
+            setIncidents((prev) =>
+              isTerminal
+                ? prev.filter((item) => item.reference_no !== reference_no)
+                : prev.map((item) =>
+                    item.reference_no === reference_no
+                      ? { ...item, rawStatus: status, statusLabel: badge.label, statusBg: badge.style }
+                      : item
+                  )
+            )
+
+            setSelectedIncident((prev) => {
+              if (!prev || prev.reference_no !== reference_no) return prev
+              if (isTerminal) {
+                setTimeout(() => setSelectedIncident(null), 1000)
+                return { ...prev, rawStatus: status, statusLabel: badge.label, statusBg: badge.style }
+              }
+              return { ...prev, rawStatus: status, statusLabel: badge.label, statusBg: badge.style }
+            })
+          }
+
+          if (payload.event === 'VOICEMAIL_ATTACHED') {
+            const { reference_no, voicemail_file_id } = payload.data || {}
+            setIncidents((prev) =>
+              prev.map((item) => (item.reference_no === reference_no ? { ...item, voicemail_file_id } : item))
+            )
+            setSelectedIncident((prev) =>
+              prev && prev.reference_no === reference_no ? { ...prev, voicemail_file_id } : prev
+            )
+          }
+        } catch (e) {
+          console.error('Ticket WS parsing error', e)
         }
-      } catch (e) {
-        console.error('Ticket WS parsing error', e)
+      }
+
+      ws.onclose = () => {
+        if (!isUnmounted) {
+          reconnectTimer = setTimeout(() => {
+            loadTickets()
+            connectWS()
+          }, 2000)
+        }
       }
     }
 
-    return () => ws.close()
-  }, [])
+    connectWS()
+
+    return () => {
+      isUnmounted = true
+      clearTimeout(reconnectTimer)
+      if (ws) ws.close()
+    }
+  }, [loadTickets])
 
   const handleOpenModal = (incident) => {
     setActionError('')
@@ -147,8 +175,12 @@ function TicketManagement() {
         {incidents.length === 0 ? (
           <p className="text-zinc-500 text-xs text-center py-6">No recent incidents recorded.</p>
         ) : (
-          incidents.map((item) => (
-            <IncidentTicketItem key={item.id} item={item} onSelect={handleOpenModal} />
+          incidents.map((item, idx) => (
+            <IncidentTicketItem
+              key={item.id || item.reference_no || idx}
+              item={item}
+              onSelect={handleOpenModal}
+            />
           ))
         )}
       </div>

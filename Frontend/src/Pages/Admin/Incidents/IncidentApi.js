@@ -1,7 +1,14 @@
 // All backend calls for incidents and geospatial analytics live here.
 // Errors are parsed cleanly into human-readable messages for try/catch blocks in components.
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const DEFAULT_HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const IS_LOCAL = DEFAULT_HOST === 'localhost' || DEFAULT_HOST === '127.0.0.1';
+
+const RAW_API_URL =
+  import.meta.env.VITE_API_URL ||
+  (IS_LOCAL ? `http://${DEFAULT_HOST}:8000` : 'https://thesis2026-production.up.railway.app');
+
+const API_URL = RAW_API_URL.replace(/\/+$/, '');
 
 function readError(data) {
   if (!data || !data.detail) return 'Something went wrong. Please try again.';
@@ -84,9 +91,8 @@ export const getIncidentHotspots = ({ year, month, incidentType, status = 'resol
   return request(`/hotspots${qs ? `?${qs}` : ''}`, {}, '/analytics');
 };
 
-// Helper function: Resolves the WebSocket endpoint URL based on current protocol
+// Helper function: Resolves the WebSocket endpoint URL directly from API_URL
 export const getIncidentWSUrl = () => {
-  const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const baseUrl = API_URL.replace(/^https?:\/\//, '');
-  return `${wsProtocol}//${baseUrl}/incidents/ws`;
+  const wsBase = API_URL.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://');
+  return `${wsBase}/incidents/ws`;
 };
