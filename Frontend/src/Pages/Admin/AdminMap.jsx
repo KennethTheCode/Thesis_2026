@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
-import { getMapFacilities } from '../Admin/ManageFacilities/facilityApi'
-import { getIncidentWSUrl, getMapIncidents } from './Incidents/IncidentApi.js'
+import { getMapFacilities } from '.ManageFacilities/facilityApi'
+import { getMapIncidents } from './Incidents/IncidentApi.js'
 import { FACILITY_TYPES, typeInfo } from '../Admin/ManageFacilities/Facilityoptions'
+import { useOptionalIncidents } from './context/IncidentContext.jsx'
+import { formatIncident } from './incidentHelpers.js'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -12,6 +14,8 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 })
+
+const BINAN_DEFAULT_CENTER = [14.3323, 121.082]
 
 const blinkingSOSIcon = L.divIcon({
   className: 'custom-blinking-sos-icon',
@@ -64,6 +68,16 @@ function facilityIcon(type) {
   return iconCache[type]
 }
 
+function getCoords(inc) {
+  if (!inc) return null
+  const lat = Number(inc.latitude ?? inc.location?.coordinates?.[1])
+  const lon = Number(inc.longitude ?? inc.location?.coordinates?.[0])
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || (lat === 0 && lon === 0)) {
+    return null
+  }
+  return [lat, lon]
+}
+
 function ResizeMap() {
   const map = useMap()
   useEffect(() => {
@@ -78,106 +92,152 @@ function ResizeMap() {
   return null
 }
 
-function RecenterMap({ center }) {
+function MapViewportController({ focusIncident, latestAlert, onAlertHandled }) {
   const map = useMap()
+
+  // Recenter only when focusIncident target changes (e.g., inside IncidentDetailsModal)
   useEffect(() => {
-    if (center && center[0] && center[1]) {
-      map.setView(center, 15)
+    const coords = getCoords(focusIncident)
+    if (coords) {
+      map.setView(coords, 16)
     }
-  }, [center, map])
+  }, [focusIncident?.reference_no, focusIncident?.latitude, focusIncident?.longitude, map])
+
+  // Smoothly fly to incoming emergency SOS on the main dispatch map
+  useEffect(() => {
+    if (focusIncident || !latestAlert) return
+    const coords = getCoords(latestAlert)
+    if (coords) {
+      map.flyTo(coords, 16, { duration: 0.8 })
+    }
+    onAlertHandled?.()
+  }, [latestAlert, focusIncident, onAlertHandled, map])
+
   return null
 }
 
 function AdminMap({ showFacilities = true, focusIncident = null, refreshKey = 0 }) {
   const mapWrapperRef = useRef(null)
   const [facilities, setFacilities] = useState([])
-  const [incidents, setIncidents] = useState([])
+  const [fallbackIncidents, setFallbackIncidents] = useState([])
   const [error, setError] = useState('')
 
-  // Determine initial center: Focus incident coordinates or Biñan center
-  const centerCoords = focusIncident && focusIncident.latitude && focusIncident.longitude
-    ? [focusIncident.latitude, focusIncident.longitude]
-    : [14.3323, 121.082]
+  // Read from shared IncidentContext if mounted inside <IncidentProvider>
+  const incidentCtx = useOptionalIncidents()
+  const hasContext = Boolean(incidentCtx)
 
-  // If focusIncident is provided, only render that specific incident
-  const activeIncidents = focusIncident
-    ? [focusIncident]
-    : incidents
+  const latestAlert = incidentCtx?.latestAlert || null
+  const clearLatestAlert = incidentCtx?.clearLatestAlert
+  const syncIncidents = incidentCtx?.syncIncidents
 
-  // Fetch all map incidents if not focusing on a single one
+  // Fallback fetch ONLY if AdminMap is mounted outside <IncidentProvider>
   useEffect(() => {
-    if (focusIncident) return
+    if (hasContext || focusIncident) return
+    let ignore = false
     getMapIncidents()
-      .then((data) => setIncidents(data))
+      .then((data) => {
+        if (!ignore) setFallbackIncidents(data.map((inc) => formatIncident(inc)))
+      })
       .catch((err) => console.error('Error loading incidents:', err))
-  }, [refreshKey, focusIncident])
+    return () => {
+      ignore = true
+    }
+  }, [hasContext, focusIncident, refreshKey])
+
+  // Respect manual refreshKey prop when inside <IncidentProvider>
+  useEffect(() => {
+    if (hasContext && refreshKey > 0 && !focusIncident) {
+      syncIncidents?.()
+    }
+  }, [hasContext, refreshKey, focusIncident, syncIncidents])
+
+  const liveIncidents = hasContext ? incidentCtx.incidents : fallbackIncidents
+  const initialCenter = getCoords(focusIncident) || BINAN_DEFAULT_CENTER
+  const activeIncidents = focusIncident ? [focusIncident] : liveIncidents
 
   // Fetch facilities ONLY if showFacilities is true
   useEffect(() => {
     if (!showFacilities) return
     let ignore = false
     getMapFacilities()
-      .then((data) => { if (!ignore) { setFacilities(data); setError('') } })
-      .catch((err) => { if (!ignore) setError(err.message) })
-    return () => { ignore = true }
+      .then((data) => {
+        if (!ignore) {
+          setFacilities(data)
+          setError('')
+        }
+      })
+      .catch((err) => {
+        if (!ignore) setError(err.message)
+      })
+    return () => {
+      ignore = true
+    }
   }, [showFacilities, refreshKey])
 
-  // Listen for WebSockets if not in single-focus mode
-  useEffect(() => {
-    if (focusIncident) return
-    const ws = new WebSocket(getIncidentWSUrl())
-    ws.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data)
-        if (payload.event === 'NEW_INCIDENT') {
-          setIncidents((prev) => [payload.data, ...prev])
-        }
-      } catch (e) {
-        console.error('WS parse error:', e)
-      }
-    }
-    return () => ws.close()
-  }, [focusIncident])
-
   return (
-    <div ref={mapWrapperRef} className="relative w-full h-full min-h-[220px] overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-lg z-10">
-      <MapContainer center={centerCoords} zoom={15} scrollWheelZoom={true} className="h-full w-full min-h-[220px]">
+    <div
+      ref={mapWrapperRef}
+      className="relative w-full h-full min-h-[220px] overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-lg z-10"
+    >
+      <MapContainer
+        center={initialCenter}
+        zoom={15}
+        scrollWheelZoom={true}
+        className="h-full w-full min-h-[220px]"
+      >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <ResizeMap />
-        <RecenterMap center={centerCoords} />
+        <MapViewportController
+          focusIncident={focusIncident}
+          latestAlert={latestAlert}
+          onAlertHandled={clearLatestAlert}
+        />
 
         {/* Render SOS Incident Marker(s) */}
-        {activeIncidents.map((inc) => (
-          inc.latitude && inc.longitude && (
-            <Marker key={inc.id || inc.reference_no} position={[inc.latitude, inc.longitude]} icon={blinkingSOSIcon}>
+        {activeIncidents.map((inc) => {
+          const coords = getCoords(inc)
+          if (!coords) return null
+
+          return (
+            <Marker
+              key={inc.id || inc.reference_no}
+              position={coords}
+              icon={blinkingSOSIcon}
+            >
               <Popup>
                 <div className="text-neutral-900 text-xs p-1 space-y-1">
                   <h4 className="font-bold text-sm text-red-600">EMERGENCY SOS</h4>
                   <p><strong>Ref:</strong> {inc.reference_no}</p>
+                  <p><strong>Type:</strong> {inc.incident_type || inc.title || 'SOS'}</p>
                   <p><strong>Email:</strong> {inc.email || 'N/A'}</p>
                   <p><strong>Contact:</strong> {inc.contact_number || 'N/A'}</p>
                   <p><strong>Barangay:</strong> {inc.barangay}</p>
-                  <p><strong>Status:</strong> {inc.status}</p>
+                  <p><strong>Status:</strong> {inc.statusLabel || inc.status}</p>
                 </div>
               </Popup>
             </Marker>
           )
-        ))}
+        })}
 
         {/* Render Facilities ONLY when showFacilities is true */}
-        {showFacilities && facilities.map((facility) => (
-          <Marker key={facility.id} position={[facility.latitude, facility.longitude]} icon={facilityIcon(facility.facility_type)}>
-            <Popup>
-              <div className="text-neutral-900 text-xs p-1">
-                <h4 className="font-bold text-sm text-red-600 mb-1">{facility.name}</h4>
-                <p><strong>Type:</strong> {typeInfo(facility.facility_type).label}</p>
-                <p><strong>Address:</strong> {facility.address}</p>
-                <p><strong>Barangay:</strong> {facility.barangay}</p>
-                <p><strong>Contact:</strong> {facility.contact_number}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        {showFacilities &&
+          facilities.map((facility) => (
+            <Marker
+              key={facility.id}
+              position={[facility.latitude, facility.longitude]}
+              icon={facilityIcon(facility.facility_type)}
+            >
+              <Popup>
+                <div className="text-neutral-900 text-xs p-1">
+                  <h4 className="font-bold text-sm text-red-600 mb-1">{facility.name}</h4>
+                  <p><strong>Type:</strong> {typeInfo(facility.facility_type).label}</p>
+                  <p><strong>Address:</strong> {facility.address}</p>
+                  <p><strong>Barangay:</strong> {facility.barangay}</p>
+                  <p><strong>Contact:</strong> {facility.contact_number}</p>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
       </MapContainer>
 
       {showFacilities && (

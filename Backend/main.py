@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,16 +17,32 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# WAG GAGALAWIN PERO PAG KAILANGAN SIGE LANG
+# Allowed origins for local Vite dev + Railway frontend deployment
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
+# Support comma-separated extra origins if needed (e.g. custom domain + railway.app URL)
+extra_origins = os.getenv("ALLOWED_ORIGINS", "")
+if extra_origins:
+    allowed_origins.extend(
+        [origin.strip().rstrip("/") for origin in extra_origins.split(",") if origin.strip()]
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/health") # Wag gagalawin
+@app.get("/health")
 async def health():
     try:
         await db.command("ping")
@@ -33,7 +50,7 @@ async def health():
     except Exception as e:
         return {"api": "ok", "mongodb": "not connected", "error": str(e)}
 
-# Dito mo sa baba lagay mga routers migz one line lang pang tawag
+# Routers
 app.include_router(users.router, prefix="/users", tags=["users"])
 app.include_router(facility.router, prefix="/facilities", tags=["facilities"])
 app.include_router(incidents.router, prefix="/incidents", tags=["incidents"])
