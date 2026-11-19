@@ -6,6 +6,7 @@ export const FACILITY_TYPES = [
   { value: 'police_station', label: 'Police Station', color: '#2563eb', icon: 'local_police' },
   { value: 'cdrrmo',         label: 'CDRRMO',         color: '#16a34a', icon: 'emergency' },
   { value: 'ambulance_base', label: 'Ambulance Base', color: '#9333ea', icon: 'medical_services' },
+  { value: 'barangay_hall', label: 'Barangay Hall', color: '#e1ea33', icon: 'local_government' },
 ]
 
 export const BARANGAYS = [

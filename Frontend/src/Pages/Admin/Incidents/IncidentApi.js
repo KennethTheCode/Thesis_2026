@@ -1,4 +1,4 @@
-// All backend calls for incidents live here.
+// All backend calls for incidents and geospatial analytics live here.
 // Errors are parsed cleanly into human-readable messages for try/catch blocks in components.
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
@@ -12,7 +12,7 @@ function readError(data) {
     .join('; ');
 }
 
-async function request(path, options = {}) {
+async function request(path, options = {}, basePrefix = '/incidents') {
   const isFormData = options.body instanceof FormData;
   const headers =
     options.body && !isFormData
@@ -21,7 +21,7 @@ async function request(path, options = {}) {
 
   let res;
   try {
-    res = await fetch(`${API_URL}/incidents${path}`, {
+    res = await fetch(`${API_URL}${basePrefix}${path}`, {
       credentials: 'include',
       ...options,
       headers,
@@ -71,6 +71,18 @@ export const importIncidentsCsv = (file) => {
 
 // GET endpoint: Fetches all resolved records (CSV baseline + resolved live SOS) from `incidents`
 export const getResolvedIncidents = () => request('/resolved');
+
+// GET endpoint: Aggregates incident density per barangay from `/analytics/hotspots`
+export const getIncidentHotspots = ({ year, month, incidentType, status = 'resolved' } = {}) => {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (year && year !== 'all') params.set('year', year);
+  if (month && month !== 'all') params.set('month', month);
+  if (incidentType && incidentType !== 'all') params.set('incident_type', incidentType);
+
+  const qs = params.toString();
+  return request(`/hotspots${qs ? `?${qs}` : ''}`, {}, '/analytics');
+};
 
 // Helper function: Resolves the WebSocket endpoint URL based on current protocol
 export const getIncidentWSUrl = () => {

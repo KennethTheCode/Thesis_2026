@@ -7,6 +7,7 @@ import UserPage from './Pages/Users/UserPage'
 import AdminDashboard from './Pages/Admin/AdminDashboard'
 import ManageFacilities from './Pages/Admin/ManageFacilities/ManageFacilities'
 import ManageIncidents from './Pages/Admin/Incidents/ManageIncidents'
+import ManageAnalytics from './Pages/Admin/Analytics/ManageAnalytics'
 function App() {
   
 
@@ -20,6 +21,7 @@ function App() {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/facilities" element={<ManageFacilities />} />
           <Route path="/incidents" element={<ManageIncidents />} />
+          <Route path="/analytics" element={<ManageAnalytics />} />
         </Routes>
       </div>
     </Router>
